@@ -9,5 +9,5 @@ without any warranty of any kind, see `LICENSE` for more information.
 * Read about the [test system](https://api.test.nordnet.se/projects/api/wiki/Test_system)
 
 ## Examples
-* [Python 3](www.google.se)
+* [Python 3](https://github.com/nordnet/next-api-v2-examples/tree/master/python3)
 
