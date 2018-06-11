@@ -19,6 +19,7 @@ without any warranty of any kind, see `LICENSE` for more information.
 2. Download the `nordnet/next-api-v2-examples` repo
 3. Run and provide your username and password as arguments
 ```
+cd python3
 pip3 install -r requirements.txt
 ./test_program.py [insert username] [insert password]
 ```
