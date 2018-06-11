@@ -23,6 +23,55 @@ cd python3
 pip3 install -r requirements.txt
 ./test_program.py [insert username] [insert password]
 ```
+Running the test program should output something that looks similiar to the following example output
+```json
+{
+    "message": "",
+    "system_running": true,
+    "timestamp": 1528730480984,
+    "valid_version": true
+}
+>> Response from logging into the session
+{
+    "country": "SE",
+    "environment": "exttest",
+    "expires_in": 300,
+    "private_feed": {
+        "encrypted": true,
+        "hostname": "priv.api.test.nordnet.se",
+        "port": 443
+    },
+    "public_feed": {
+        "encrypted": true,
+        "hostname": "pub.api.test.nordnet.se",
+        "port": 443
+    },
+    "session_key": "01ba12bfd3244e63ad52c1731a54e2f3f98f949e"
+}
+>> Response from Price Feed
+{
+    "data": {
+        "ask": 0.0,
+        "ask_volume": 0,
+        "bid": 65.0,
+        "bid_volume": 26200,
+        "close": 64.36,
+        "high": 0.0,
+        "i": "101",
+        "last": 0.0,
+        "last_volume": 0,
+        "low": 0.0,
+        "m": 11,
+        "open": 0.0,
+        "tick_timestamp": 1528726500001,
+        "trade_timestamp": 1528726500001,
+        "turnover": 0.0,
+        "turnover_volume": 0,
+        "vwap": 64.19
+    },
+    "type": "price"
+}
+```
 
 ## Common issues
 * SyntaxError: check that your Python version is 3 or higher
