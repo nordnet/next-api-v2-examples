@@ -14,10 +14,8 @@ without any warranty of any kind, see `LICENSE` for more information.
   [pip](https://pip.pypa.io/en/stable/installing/) installed
 
 ## Install and run
-1. Log into the [system](https://api.test.nordnet.se/api-docs/index.html?#) to
-   start your session
-2. Download the `nordnet/next-api-v2-examples` repo
-3. Run and provide your username and password as arguments
+1. Download the `nordnet/next-api-v2-examples` repo
+2. Run and provide your username and password as arguments
 ```
 cd python3
 pip3 install -r requirements.txt
