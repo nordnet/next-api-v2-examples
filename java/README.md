@@ -11,6 +11,7 @@ without any warranty of any kind, see `LICENSE` for more information.
   https://api.test.nordnet.se/projects/api/wiki/Test_system) to
   learn about the delimitations and how the test market works
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html)
+  installed
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
