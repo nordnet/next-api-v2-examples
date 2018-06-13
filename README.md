@@ -10,4 +10,4 @@ without any warranty of any kind, see `LICENSE` for more information.
 
 ## Examples
 * [Python 3](https://github.com/nordnet/next-api-v2-examples/tree/master/python3)
-
+* [Java](https://github.com/nordnet/next-api-v2-examples/tree/master/java)
