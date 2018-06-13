@@ -10,18 +10,13 @@ without any warranty of any kind, see `LICENSE` for more information.
 * Read about the [test system](
   https://api.test.nordnet.se/projects/api/wiki/Test_system) to
   learn about the delimitations and how the test market works
-* [Python 3](https://www.python.org/downloads/) and
-  [pip](https://pip.pypa.io/en/stable/installing/) installed
+* [Java](http://www.oracle.com/technetwork/java/javase/downloads/jdk10-downloads-4416644.html)
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Run and provide your username and password as arguments
-```
-cd python3
-pip3 install -r requirements.txt
-./test_program.py [insert username] [insert password]
-```
-Running the test program should output something that looks similar to the following example output
+2. Configure your IDE to JDK 10 or higher and download the Maven dependencies 
+3. Add username and password as program arguments 
+4. Run the program and you should see the following
 ```json
 {
     "message": "",
@@ -72,14 +67,15 @@ Running the test program should output something that looks similar to the follo
 ```
 
 ## Common issues
-* SyntaxError: check that your Python version is 3 or higher
+* ClassNotFoundException: Check your Maven
 * NEXT\_LOGIN\_INVALID\_LOGIN\_PARAMETER: double-check your [password](https://api.test.nordnet.se/login)
 
 ## Questions
 If you have technical questions then,
 1. Check out the code, it is documented
 2. Read the [documentation](https://api.test.nordnet.se/api-docs/index.html)
-3. Ask questions in the [forum](https://api.test.nordnet.se/projects/api/boards)
+3. Ask questions in the
+   [forum](https://api.test.nordnet.se/projects/api/boards)
 
 Otherwise, contact Nordnet trading support with the contact details provided
 [here](https://api.test.nordnet.se)
