@@ -116,6 +116,9 @@ def main():
     ssl_socket.send(bytes(json.dumps(cmd) + '\n', 'utf-8'))
 
     # Consume message (price data or heartbeat) from public feed
+    #> Note that all the JSON objects end with newline. As such you
+    #> need to listen and read from the buffer when a full object 
+    #> has been transferred
     time.sleep(0.01)
     output = ssl_socket.recv(1024)
     output = output.decode('utf-8')
