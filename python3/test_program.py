@@ -20,17 +20,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import time
+import base64
+import http.client
+import json
 import socket
 import ssl
 import sys
-import http.client
-import json
-import base64
-from urllib.parse import urlencode
+import time
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 from multiprocessing import Process
+from urllib.parse import urlencode
 
 
 # global variables with static information about nExt API
@@ -154,8 +154,7 @@ def main():
     """
     # Input username and password for your account in the test system
     if len(sys.argv) != 3:
-        raise Exception(
-            'To run test_program you need to provide as arguments [USERNAME] [PASSWORD]')
+        raise Exception('To run test_program you need to provide as arguments [USERNAME] [PASSWORD]')
     USERNAME = sys.argv[1]
     PASSWORD = sys.argv[2]
     auth_hash = get_hash(USERNAME, PASSWORD, PUBLIC_KEY_FILENAME)
@@ -188,17 +187,22 @@ def main():
     proc.start()
 
     # Login to public feed with our session_key from NEXT API response
-    cmd = {'cmd': 'login', 'args': {'session_key': our_session_key, 'service': 'NEXTAPI'}}
+    cmd = {"cmd": "login", "args": {"session_key": our_session_key, "service": "NEXTAPI"}}
     send_cmd_to_socket(feed_socket, cmd)
 
     # Subscribe to ERIC B price in public feed
-    cmd = {'cmd': 'subscribe', 'args': {'t': 'price', 'm': 11, 'i': '101'}}
+    cmd = {"cmd": "subscribe", "args": {"t": "price", "m": 11, "i": "101"}}
     send_cmd_to_socket(feed_socket, cmd)
 
     console_input = ""
     while console_input != "exit":
         console_input = input()
-        send_cmd_to_socket(feed_socket, console_input)
+        try:
+            cmd = json.loads(console_input)
+            send_cmd_to_socket(feed_socket, cmd)
+        except Exception as e:
+            print(e)
+
 
     feed_socket.shutdown(socket.SHUT_RDWR)
     feed_socket.close()
