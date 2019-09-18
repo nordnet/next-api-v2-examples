@@ -9,7 +9,7 @@ and read from the buffer when a full object has been transferred_
 * Register an account to get access to the
   [forums](https://api.test.nordnet.se) and the test system
   [here](https://api.test.nordnet.se/account/register). Your username
-  and password are needed to authenticated to the API
+  and password are needed to authenticate to the API
 * Read about the [test system](
   https://api.test.nordnet.se/projects/api/wiki/Test_system) to
   learn about the delimitations and how the test market works
