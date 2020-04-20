@@ -107,7 +107,7 @@ def try_parse_into_json(string):
     for i in range(0, len(json_strings)):
         try:
             json_data = json.loads(json_strings[i])
-            print(">> JSON udpates from public feed")
+            print(">> JSON updates from public feed")
             print(json.dumps(json_data, indent=4, sort_keys=True))
         except:
             ## If this part cannot be parsed into JSON, It's probably not
