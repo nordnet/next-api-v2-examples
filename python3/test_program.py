@@ -187,7 +187,7 @@ def main():
     proc.start()
 
     # Login to public feed with our session_key from NEXT API response
-    cmd = {"cmd": "login", "args": {"session_key": our_session_key, "service": "NEXTAPI"}}
+    cmd = {"cmd": "login", "args": {"session_key": our_session_key, "service": SERVICE_NAME}}
     send_cmd_to_socket(feed_socket, cmd)
 
     # Subscribe to ERIC B price in public feed
