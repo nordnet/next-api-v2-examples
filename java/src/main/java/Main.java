@@ -25,126 +25,132 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 
 public class Main {
 
-  public static void print(String s) {
-    System.out.println(s);
-  }
+    static final String SERVICE = "NEXTAPI";
+    static final String URL = "https://api.test.nordnet.se/next/";
+    static final int API_VERSION = 2;
+    static final String PUBLIC_KEY_FILENAME = "NEXTAPI_TEST_public.pem";
+    static ObjectMapper mapper;
 
-  public static String prettyPrintJSON(JsonNode node) throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-    System.out.println(mapper.writer().writeValueAsString(node));
-    return mapper.writer().writeValueAsString(node);
-  }
-
-  public static String prettyPrintJSON(String s) throws IOException {
-    JsonNode node = new ObjectMapper().readTree(s);
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
-    System.out.println(mapper.writer().writeValueAsString(node));
-    return mapper.writer().writeValueAsString(node);
-  }
-  
-  public static void assertValidateJSONString(String s) throws Exception {
-    if (!s.endsWith("\n"))
-      throw new Exception("JSON-strings must end with a newline, \n" + prettyPrintJSON(s));
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-    try {
-      objectMapper.readTree(s);
-    } catch (IOException e) {
-      throw new Exception(
-          "JSON is invalid, double-check that the following is correct, \n" + prettyPrintJSON(s));
+    static {
+        mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
     }
-  }
 
-  static final String SERVICE = "NEXTAPI";
-  static final String URL = "https://api.test.nordnet.se/next/";
-  static final int API_VERSION = 2;
-  static final String PUBLIC_KEY_FILENAME = "NEXTAPI_TEST_public.pem";
+    public static void print(String s) {
+        System.out.println(s);
+    }
 
-  public static void main(String[] args) throws Exception {
-    // To start the client provide username and password as program arguments
-    SimpleRestClient client = new SimpleRestClient();
+    public static String prettyPrintJSON(JsonNode node) throws JsonProcessingException {
+        System.out.println(mapper.writer().writeValueAsString(node));
+        return mapper.writer().writeValueAsString(node);
+    }
 
-    // Ping server to check status
-    JsonNode pingResp = client.httpRequestNoParameter("/");
-    print(">> Response from checking NNAPI status");
-    prettyPrintJSON(pingResp);
+    public static String prettyPrintJSON(String s) throws IOException {
+        JsonNode node = mapper.readTree(s);
+        System.out.println(mapper.writer().writeValueAsString(node));
+        return mapper.writer().writeValueAsString(node);
+    }
 
-    // Store username and password
-    if (args.length != 2)
-      throw new Exception("Start program with [username] [password] as program arguments");
-    String username = args[0];
-    String password = args[1];
+    public static void assertValidateJSONString(String s) throws Exception {
+        if (!s.endsWith("\n")) {
+            throw new Exception("JSON-strings must end with a newline, \n" + prettyPrintJSON(s));
+        }
 
-    // Login into NNAPI using your username and password
-    JsonNode loginResponse = client.login(username, password);
-    String sessionKey = loginResponse.get("session_key").asText();
-    String hostName = loginResponse.get("public_feed").get("hostname").asText();
-    int port = Integer.parseInt(loginResponse.get("public_feed").get("port").asText());
-    print(">> Response from logging into the session");
-    prettyPrintJSON(loginResponse);
+        try {
+            mapper.readTree(s);
+        } catch (IOException e) {
+            throw new Exception(
+                    "JSON is invalid, double-check that the following is correct, \n" + prettyPrintJSON(s));
+        }
+    }
 
-    // Extract account number
-    JsonNode resp = client.httpRequestNoParameter("/accounts");
-    String accountNumber = resp.get(0).get("accno").asText();
+    public static void main(String[] args) throws Exception {
+        // To start the client provide username and password as program arguments
+        SimpleRestClient client = new SimpleRestClient();
 
-    // Open an encrypted TCP connection
-    SimpleFeedClient feedClient = new SimpleFeedClient(hostName, port);
+        // Ping server to check status
+        JsonNode pingResp = client.httpRequestNoParameter("/");
+        print(">> Response from checking NNAPI status");
+        prettyPrintJSON(pingResp);
 
-    // Output details about certificates and session
-    SSLSession session = ((SSLSocket) feedClient.getSocket()).getSession();
-    Certificate[] certificates = session.getPeerCertificates();
-    // SimpleFeedClient.printCertificateDetails(certificates);
-    // SimpleFeedClient.printSessionDetails(session);
+        // Store username and password
+        if (args.length != 2) {
+            throw new Exception("Start program with [username] [password] as program arguments");
+        }
+        String username = args[0];
+        String password = args[1];
 
-    BufferedReader in =
-        new BufferedReader(
-            new InputStreamReader(feedClient.getSocket().getInputStream(), "UTF-8"));
-    BufferedWriter out =
-        new BufferedWriter(
-            new OutputStreamWriter(feedClient.getSocket().getOutputStream(), "UTF-8"));
+        // Login into NNAPI using your username and password
+        JsonNode loginResponse = client.login(username, password);
+        String sessionKey = loginResponse.get("session_key").asText();
+        String hostName = loginResponse.get("public_feed").get("hostname").asText();
+        int port = Integer.parseInt(loginResponse.get("public_feed").get("port").asText());
+        print(">> Response from logging into the session");
+        prettyPrintJSON(loginResponse);
 
-    // Important to always end JSON-string with newline
-    String loginRequest =
-        "{ \"cmd\": \"login\", \"args\": { \"session_key\":\""
-            + sessionKey
-            + "\""
-            + ",\"service\": \""
-            + Main.SERVICE
-            + "\" "
-            + "}}\n";
+        // Extract account number
+        JsonNode resp = client.httpRequestNoParameter("/accounts");
+        String accountNumber = resp.get(0).get("accno").asText();
 
-    // Always validate your JSON
-    assertValidateJSONString(loginRequest);
+        // Open an encrypted TCP connection
+        SimpleFeedClient feedClient = new SimpleFeedClient(hostName, port);
 
-    // Send login request
-    out.write(loginRequest);
-    out.flush();
+        // Output details about certificates and session
+        SSLSession session = ((SSLSocket) feedClient.getSocket()).getSession();
+        Certificate[] certificates = session.getPeerCertificates();
+        // SimpleFeedClient.printCertificateDetails(certificates);
+        // SimpleFeedClient.printSessionDetails(session);
 
-    // Send subscription
-    String priceFeedSubscription =
-        "{\"cmd\": \"subscribe\", \"args\": {\"t\": \"price\", \"m\": 11, \"i\": \"101\"}}\n";
-    assertValidateJSONString(priceFeedSubscription);
-    out.write(priceFeedSubscription);
-    out.flush();
+        try (BufferedReader in =
+                     new BufferedReader(
+                             new InputStreamReader(feedClient.getSocket().getInputStream(), StandardCharsets.UTF_8));
+             BufferedWriter out =
+                     new BufferedWriter(
+                             new OutputStreamWriter(feedClient.getSocket().getOutputStream(), StandardCharsets.UTF_8));) {
 
-    print(">> Response from Price Feed");
-    String responsePriceFeed = in.readLine();
-    prettyPrintJSON(responsePriceFeed);
+            // Important to always end JSON-string with newline
+            String loginRequest =
+                    "{ \"cmd\": \"login\", \"args\": { \"session_key\":\""
+                            + sessionKey
+                            + "\""
+                            + ",\"service\": \""
+                            + Main.SERVICE
+                            + "\" "
+                            + "}}\n";
 
-    // Log out of NNAPI
-    in.close();
-    out.close();
-    feedClient.closeSocket();
-    client.logout(sessionKey);
-  }
+            // Always validate your JSON
+            assertValidateJSONString(loginRequest);
+
+            // Send login request
+            out.write(loginRequest);
+            out.flush();
+
+            // Send subscription
+            String priceFeedSubscription =
+                    "{\"cmd\": \"subscribe\", \"args\": {\"t\": \"price\", \"m\": 11, \"i\": \"101\"}}\n";
+            assertValidateJSONString(priceFeedSubscription);
+            out.write(priceFeedSubscription);
+            out.flush();
+
+            print(">> Response from Price Feed");
+            String responsePriceFeed = in.readLine();
+            prettyPrintJSON(responsePriceFeed);
+
+        }
+        // Log out of NNAPI
+        feedClient.closeSocket();
+        client.logout(sessionKey);
+    }
 }

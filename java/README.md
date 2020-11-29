@@ -19,7 +19,7 @@ and read from the buffer when a full object has been transferred_
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Configure your IDE to JDK 10 or higher and download the Maven dependencies 
+2. Configure your IDE to JDK 11 or higher and download the Maven dependencies 
 3. Add username and password as program arguments 
 4. Run the program and you should see the following
 ```json

@@ -27,25 +27,18 @@ import java.security.cert.X509Certificate;
 
 public class SimpleFeedClient {
 
-  private Socket socket;
+    private Socket socket;
 
-  SimpleFeedClient(String hostName, int port) throws IOException {
-    // Open an encrypted TCP connection
-    SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    socket = ssf.createSocket(hostName, port);
+    SimpleFeedClient(String hostName, int port) throws IOException {
+        // Open an encrypted TCP connection
+        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        socket = ssf.createSocket(hostName, port);
 
-    // Configure connection
-    socket.setSoTimeout(10000000);
-    socket.setKeepAlive(true);
-  }
+        // Configure connection
+        socket.setSoTimeout(10000000);
+        socket.setKeepAlive(true);
+    }
 
-  public Socket getSocket() {
-    return socket;
-  }
-
-  public void closeSocket() throws IOException {
-      socket.close();
-  }
     public static void printSessionDetails(SSLSession session) {
         System.out.println(">> NAPI's certificate");
         System.out.println("Peer host: " + session.getPeerHost());
@@ -56,10 +49,18 @@ public class SimpleFeedClient {
         System.out.println("Session accessed: " + session.getLastAccessedTime());
     }
 
-    public static void printCertificateDetails(Certificate[] certificate) {
+    public static void printCertificateDetails(Certificate... certificate) {
         for (Certificate c : certificate) {
-            System.out.println(((X509Certificate) c).getSubjectDN().toString());
+            System.out.println(((X509Certificate) c).getSubjectDN());
         }
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void closeSocket() throws IOException {
+        socket.close();
     }
 
 }
