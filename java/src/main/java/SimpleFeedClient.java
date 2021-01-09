@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Nordnet Bank AB
+ * Copyright 2021 Nordnet Bank AB
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
@@ -17,35 +17,107 @@
  * SOFTWARE.
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 public class SimpleFeedClient {
 
-  private Socket socket;
+    private final Socket socket;
+    private String sessionKey;
+    private final BufferedReader in;
+    private final BufferedWriter out;
+    private final String SERVICE = "NEXTAPI";
 
-  SimpleFeedClient(String hostName, int port) throws IOException {
-    // Open an encrypted TCP connection
-    SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    socket = ssf.createSocket(hostName, port);
+    SimpleFeedClient(JsonNode loginResponse) throws IOException {
+        sessionKey = loginResponse.get("session_key").asText();
+        String hostName = loginResponse.get("public_feed").get("hostname").asText();
+        int port = Integer.parseInt(loginResponse.get("public_feed").get("port").asText());
 
-    // Configure connection
-    socket.setSoTimeout(10000000);
-    socket.setKeepAlive(true);
-  }
+        // Open an encrypted TCP connection
+        SSLSocketFactory ssf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        socket = ssf.createSocket(hostName, port);
 
-  public Socket getSocket() {
-    return socket;
-  }
+        // Configure connection
+        socket.setSoTimeout(10000000);
+        socket.setKeepAlive(true);
 
-  public void closeSocket() throws IOException {
-      socket.close();
-  }
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void closeSocket() throws IOException {
+        socket.close();
+    }
+
+    public void login() {
+        String loginRequest = """
+                { "cmd": "login", "args": { "session_key": "%s", "service":"%s"}}\n
+                """.formatted(sessionKey, SERVICE);
+
+        // Always validate your JSON
+        Util.assertValidateJSONString(loginRequest);
+
+        try {
+            out.write(loginRequest);
+            out.flush();
+        } catch(IOException e) {
+            System.err.println("Could not write to API");
+        }
+    }
+
+    public void logout() {
+        // Log out of NNAPI
+        try {
+            in.close();
+            out.close();
+            closeSocket();
+        } catch (IOException e) {
+            System.err.println("Could not close feedclient connection");
+        }
+    }
+
+    public void subscribePublicFeed(String feedSubscription) throws Exception {
+        Util.assertValidateJSONString(feedSubscription);
+        out.write(feedSubscription);
+        out.flush();
+
+        System.out.println(">> Response from Price Feed");
+        String responsePriceFeed = in.readLine();
+        Util.prettyPrintJSON(responsePriceFeed);
+    }
+
+    public void printCertificateDetails() {
+        // Output details about certificates and session
+        SSLSession session = ((SSLSocket) getSocket()).getSession();
+        Certificate[] certificates = null;
+        try {
+            certificates = session.getPeerCertificates();
+        } catch (SSLPeerUnverifiedException e) {
+            // empty
+        }
+        SimpleFeedClient.printCertificateDetails(certificates);
+        SimpleFeedClient.printSessionDetails(session);
+    }
+
     public static void printSessionDetails(SSLSession session) {
         System.out.println(">> NAPI's certificate");
         System.out.println("Peer host: " + session.getPeerHost());
@@ -56,10 +128,11 @@ public class SimpleFeedClient {
         System.out.println("Session accessed: " + session.getLastAccessedTime());
     }
 
-    public static void printCertificateDetails(Certificate[] certificate) {
-        for (Certificate c : certificate) {
-            System.out.println(((X509Certificate) c).getSubjectDN().toString());
-        }
+    public static void printCertificateDetails(Certificate[] certificates) {
+        Arrays.stream(certificates)
+                .map(c -> (X509Certificate)c)
+                .map(X509Certificate::getSubjectDN)
+                .forEach(System.out::println);
     }
-
 }
+
