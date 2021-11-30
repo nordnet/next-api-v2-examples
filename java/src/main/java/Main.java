@@ -21,41 +21,41 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class Main {
 
-  private static final String priceFeedSubscription = """
-                {"cmd": "subscribe", "args": {"t": "price", "m": %s, "i": "%s"}}\n";
-                """.formatted("11", "101"); //Ericsson B
-  private static final String indicatorFeedSubscription = """
+    private static final String priceFeedSubscription = """
+            {"cmd": "subscribe", "args": {"t": "price", "m": %s, "i": "%s"}}\n";
+            """.formatted("11", "101"); //Ericsson B
+    private static final String indicatorFeedSubscription = """
             {"cmd": "subscribe", "args": {"t": "indicator", "m": "%s", "i": "%s"}}\n";
             """.formatted("201", "170.10.OMXS30GI"); // OMXS30GI
-  private static SimpleRestClient client;
-  private static SimpleFeedClient feedClient;
+    private static SimpleRestClient client;
+    private static SimpleFeedClient feedClient;
 
-  public static void main(String[] args) {
-    try {
-      if (args.length != 2) {
-        System.out.println("Start program with [username] [password] as program arguments");
-        System.exit(1);
-      }
+    public static void main(String[] args) {
+        try {
+            if (args.length != 2) {
+                System.out.println("Start program with [username] [password] as program arguments");
+                System.exit(1);
+            }
 
-      String username = args[0];
-      String password = args[1];
+            String username = args[0];
+            String password = args[1];
 
-      client = new SimpleRestClient();
-      client.pingApi();
-      JsonNode loginResponse = client.login(username, password);
-      client.readAccountNumber();
+            client = new SimpleRestClient();
+            client.pingApi();
+            JsonNode loginResponse = client.login(username, password);
+            client.readAccountNumber();
 
-      feedClient = new SimpleFeedClient(loginResponse);
-      feedClient.login();
-      feedClient.printCertificateDetails();
-      feedClient.subscribePublicFeed(priceFeedSubscription);
-      feedClient.subscribePublicFeed(indicatorFeedSubscription);
+            feedClient = new SimpleFeedClient(loginResponse);
+            feedClient.login();
+            feedClient.printCertificateDetails();
+            feedClient.subscribePublicFeed(priceFeedSubscription);
+            feedClient.subscribePublicFeed(indicatorFeedSubscription);
 
-      feedClient.logout();
-      client.logout();
-    } catch (Exception e) {
-      System.err.println("Caught " + e.getClass().getName() + ": " + e.getMessage());
-      System.exit(1);
+            feedClient.logout();
+            client.logout();
+        } catch (Exception e) {
+            System.err.println("Caught " + e.getClass().getName() + ": " + e.getMessage());
+            System.exit(1);
+        }
     }
-  }
 }

@@ -42,7 +42,7 @@ public class Util {
     }
 
     public static String prettyPrintJSON(JsonNode node) {
-        if(node == null) {
+        if (node == null) {
             return "Json is null";
         }
         ObjectMapper mapper = new ObjectMapper();
