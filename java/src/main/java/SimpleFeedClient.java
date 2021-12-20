@@ -79,7 +79,7 @@ public class SimpleFeedClient {
         try {
             out.write(loginRequest);
             out.flush();
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.err.println("Could not write to API");
         }
     }
@@ -130,8 +130,8 @@ public class SimpleFeedClient {
 
     public static void printCertificateDetails(Certificate[] certificates) {
         Arrays.stream(certificates)
-                .map(c -> (X509Certificate)c)
-                .map(X509Certificate::getSubjectDN)
+                .map(c -> (X509Certificate) c)
+                .map(X509Certificate::getSubjectX500Principal)
                 .forEach(System.out::println);
     }
 }
