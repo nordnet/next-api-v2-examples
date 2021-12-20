@@ -6,13 +6,7 @@ _Note that all the JSON objects end with newline.  As such you need to listen
 and read from the buffer when a full object has been transferred_
 
 ## Requirements
-* Register an account to get access to the
-  [forums](https://api.test.nordnet.se) and the test system
-  [here](https://api.test.nordnet.se/account/register). Your username
-  and password are needed to authenticate to the API
-* Read about the [test system](
-  https://api.test.nordnet.se/projects/api/wiki/Test_system) to
-  learn about the delimitations and how the test market works
+* There is no longer any test environment available. Contact Nordnet Trading Support to get started.
 * [Python 3](https://www.python.org/downloads/) and
   [pip](https://pip.pypa.io/en/stable/installing/) installed
 
@@ -39,12 +33,12 @@ Running the test program should output something that looks similar to the follo
     "expires_in": 300,
     "private_feed": {
         "encrypted": true,
-        "hostname": "priv.api.test.nordnet.se",
+        "hostname": "priv.next.nordnet.se",
         "port": 443
     },
     "public_feed": {
         "encrypted": true,
-        "hostname": "pub.api.test.nordnet.se",
+        "hostname": "pub.next.nordnet.se",
         "port": 443
     },
     "session_key": "01ba12bfd3244e63ad52c1731a54e2f3f98f949e"
@@ -76,13 +70,8 @@ Running the test program should output something that looks similar to the follo
 
 ## Common issues
 * SyntaxError: check that your Python version is 3 or higher
-* NEXT\_LOGIN\_INVALID\_LOGIN\_PARAMETER: double-check your [password](https://api.test.nordnet.se/login)
 
 ## Questions
 If you have technical questions then,
 1. Check out the code, it is documented
-2. Read the [documentation](https://api.test.nordnet.se/api-docs/index.html)
-3. Ask questions in the [forum](https://api.test.nordnet.se/projects/api/boards)
-
-Otherwise, contact Nordnet trading support with the contact details provided
-[here](https://api.test.nordnet.se)
+2. Read the [API documentation](https://www.nordnet.se/externalapi/docs)
