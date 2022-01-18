@@ -29,7 +29,7 @@ Running the test program should output something that looks similar to the follo
 >> Response from logging into the session
 {
     "country": "SE",
-    "environment": "exttest",
+    "environment": "prod",
     "expires_in": 300,
     "private_feed": {
         "encrypted": true,

@@ -50,7 +50,7 @@ public class SimpleRestClient {
     private final String SERVICE = "NEXTAPI";
     private static final String URL = "https://www.nordnet.se/next/";
     private static final int API_VERSION = 2;
-    private static final String PUBLIC_KEY_FILENAME = "NEXTAPI_2_public.pem";
+    private static final String PUBLIC_KEY_FILENAME = "/path/to/my/public_key_file.pem";
 
     private final WebTarget baseResource;
     private String sessionKey;
