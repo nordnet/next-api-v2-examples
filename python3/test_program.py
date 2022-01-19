@@ -37,8 +37,8 @@ from urllib.parse import urlencode
 # global variables with static information about nExt API
 SERVICE = 'NEXTAPI'
 API_VERSION = '2'
-API_URL = 'api.test.nordnet.se'
-PUBLIC_KEY_FILENAME = 'NEXTAPI_TEST_public.pem'
+API_URL = 'www.nordnet.se'
+PUBLIC_KEY_FILENAME = '/path/to/my/public_key_file.pem'
 SERVICE_NAME = 'NEXTAPI'
 
 
