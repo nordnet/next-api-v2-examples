@@ -34,11 +34,10 @@ from multiprocessing import Process
 from urllib.parse import urlencode
 
 
-# global variables with static information about nExt API
-SERVICE = 'NEXTAPI'
-API_VERSION = '2'
+# global variables with static information about Nordnet API
 API_URL = 'www.nordnet.se'
-PUBLIC_KEY_FILENAME = '/path/to/my/public_key_file.pem'
+API_PREFIX = '/api/public'
+API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
 
@@ -54,7 +53,7 @@ def get_hash(username, password, public_key_filename):
     timestamp_b64 = base64.b64encode(timestamp)
 
     auth_val = username_b64 + b':' + password_b64 + b':' + timestamp_b64
-    # Need local copy of public key for NEXT API in PEM format
+    # Need local copy of public key for Nordnet API in PEM format
 
     try:
         public_key_file_handler = open(public_key_filename, "rb").read()
@@ -153,27 +152,28 @@ def main():
     The main function
     """
     # Input username and password for your account in the test system
-    if len(sys.argv) != 3:
-        raise Exception('To run test_program you need to provide as arguments [USERNAME] [PASSWORD]')
-    USERNAME = sys.argv[1]
-    PASSWORD = sys.argv[2]
-    auth_hash = get_hash(USERNAME, PASSWORD, PUBLIC_KEY_FILENAME)
+    if len(sys.argv) != 4:
+        raise Exception('To run test_program you need to provide as arguments [USERNAME] [PASSWORD] [PEM_KEY_FILE]')
+    username = sys.argv[1]
+    password = sys.argv[2]
+    public_key_filename = sys.argv[3]
+    auth_hash = get_hash(username, password, public_key_filename)
 
     headers = {"Accept": "application/json"}
     conn = http.client.HTTPSConnection(API_URL)
 
-    # Check NEXT API status. Check NEXT API documentation page to verify the path
-    print("Checking NEXT API status...")
-    uri = '/next/' + API_VERSION + '/'
+    # Check Nordnet API status. Check Nordnet API documentation page to verify the path
+    print("Checking Nordnet API status...")
+    uri = API_PREFIX + '/' + API_VERSION + '/'
     j = send_http_request(conn, 'GET', uri, '', headers)
 
-    # POST login to NEXT API. Check NEXT API documentation page to verify the path
-    print("Logging in NEXT API...")
-    uri = '/next/' + API_VERSION + '/login'
+    # POST login to Nordnet API. Check Nordnet API documentation page to verify the path
+    print("Logging in Nordnet API...")
+    uri = API_PREFIX + '/' + API_VERSION + '/login'
     params = urlencode({'service': SERVICE_NAME, 'auth': auth_hash})
     j = send_http_request(conn, 'POST', uri, params, headers)
 
-    # Store NEXT API login response data
+    # Store Nordnet API login response data
     public_feed_hostname = j["public_feed"]["hostname"]
     public_feed_port = j["public_feed"]["port"]
     our_session_key = j["session_key"]
@@ -186,7 +186,7 @@ def main():
     proc = Process(target=receive_message_from_socket, args=(feed_socket,))
     proc.start()
 
-    # Login to public feed with our session_key from NEXT API response
+    # Login to public feed with our session_key from Nordnet API response
     cmd = {"cmd": "login", "args": {"session_key": our_session_key, "service": SERVICE_NAME}}
     send_cmd_to_socket(feed_socket, cmd)
 
@@ -194,19 +194,18 @@ def main():
     cmd = {"cmd": "subscribe", "args": {"t": "price", "m": 11, "i": "101"}}
     send_cmd_to_socket(feed_socket, cmd)
 
-    console_input = ""
+    console_input = input()
     while console_input != "exit":
-        console_input = input()
         try:
             cmd = json.loads(console_input)
             send_cmd_to_socket(feed_socket, cmd)
         except Exception as e:
             print(e)
-
+        console_input = input()
 
     feed_socket.shutdown(socket.SHUT_RDWR)
     feed_socket.close()
+    proc.terminate()
     sys.exit(0)
-
 
 main()
