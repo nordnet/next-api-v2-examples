@@ -12,11 +12,11 @@ and read from the buffer when a full object has been transferred_
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Run and provide your username and password as arguments
+2. Run and provide your username, password and the path to the Nordnet API public RSA key PEM format file as arguments
 ```
 cd python3
 pip3 install -r requirements.txt
-./test_program.py [insert username] [insert password]
+./test_program.py [insert username] [insert password] [insert pem key file path]
 ```
 Running the test program should output something that looks similar to the following example output
 ```json
