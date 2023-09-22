@@ -27,16 +27,16 @@ import socket
 import ssl
 import sys
 import time
+import multiprocessing
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from multiprocessing import Process
 from urllib.parse import urlencode
 
 
 # global variables with static information about Nordnet API
-API_URL = 'www.nordnet.se'
-API_PREFIX = '/api/public'
+API_URL = 'public.nordnet.se'
+API_PREFIX = '/api'
 API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
@@ -85,7 +85,8 @@ def connect_to_feed(public_feed_hostname, public_feed_port):
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     if public_feed_port == 443:
-        s = ssl.wrap_socket(s)
+        c = ssl.create_default_context()
+        s = c.wrap_socket(s, server_hostname=public_feed_hostname)
     s.connect((public_feed_hostname, public_feed_port))
     return s
 
@@ -183,7 +184,8 @@ def main():
     feed_socket = connect_to_feed(public_feed_hostname, public_feed_port)
 
     # Start a parallel process that keeps receiving updates from the TCP socket
-    proc = Process(target=receive_message_from_socket, args=(feed_socket,))
+    multiprocessing.set_start_method('fork')
+    proc = multiprocessing.Process(target=receive_message_from_socket, args=(feed_socket,))
     proc.start()
 
     # Login to public feed with our session_key from Nordnet API response

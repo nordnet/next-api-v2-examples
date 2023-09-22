@@ -3,16 +3,17 @@ The code examples are to be used in testing *only* (!). They are provided as is
 without any warranty of any kind, see `LICENSE` for more information.
 
 _Note that all the JSON objects end with newline.  As such you need to listen
-and read from the buffer when a full object has been transferred_
+and read from the buffer when a full object has been transferred._
 
 ## Requirements
 * There is no longer any test environment available. Contact Nordnet Trading Support to get started.
 * [Python 3](https://www.python.org/downloads/) and
-  [pip](https://pip.pypa.io/en/stable/installing/) installed
+  [pip](https://pip.pypa.io/en/stable/installation/) installed.
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Run and provide your username, password and the path to the Nordnet API public RSA key PEM format file as arguments
+2. Run and provide your username, password and the path to the Nordnet API public RSA key PEM format
+   file as arguments. The PEM file is provided by Nordnet Trading Support during onboarding.
 ```
 cd python3
 pip3 install -r requirements.txt
