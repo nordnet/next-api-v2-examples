@@ -27,7 +27,7 @@ import socket
 import ssl
 import sys
 import time
-import multiprocessing
+from threading import Thread
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -67,6 +67,7 @@ def get_hash(username, password, public_key_filename):
 
     return encoded_hash
 
+
 def send_http_request(conn, method, uri, params, headers):
     """
     Send a HTTP request
@@ -79,6 +80,7 @@ def send_http_request(conn, method, uri, params, headers):
     print(json.dumps(j, indent=4, sort_keys=True))
     return j
 
+
 def connect_to_feed(public_feed_hostname, public_feed_port):
     """
     Connect to the feed and get back a TCP socket
@@ -90,12 +92,14 @@ def connect_to_feed(public_feed_hostname, public_feed_port):
     s.connect((public_feed_hostname, public_feed_port))
     return s
 
+
 def send_cmd_to_socket(socket, cmd):
     """
     Send commands to the feed through the socket
     """
     socket.send(bytes(json.dumps(cmd) + '\n', 'utf-8'))
     print("<< Sending cmd to feed: " + str(cmd))
+
 
 def try_parse_into_json(string):
     """
@@ -118,6 +122,7 @@ def try_parse_into_json(string):
     ## If all JSONs are successfully parsed, we return an empty buffer
     return ''
 
+
 def do_receive_from_socket(socket, last_buffer):
     """
     Receive data from the socket, and try to parse it into JSON. Return
@@ -137,13 +142,14 @@ def do_receive_from_socket(socket, last_buffer):
 
     return ''
 
+
 def receive_message_from_socket(socket):
     """
     Receive data from the socket and parse it
     """
     print('\nStarting receiving from socket...\n')
     buffer = ''
-    while True:
+    while socket.session:
         buffer = do_receive_from_socket(socket, buffer)
     print('\nFinishing receiving from socket...\n')
 
@@ -182,11 +188,12 @@ def main():
     # Establish connection to public feed
     print("\nConnecting to feed " + str(public_feed_hostname) + ":" + str(public_feed_port) + "...\n")
     feed_socket = connect_to_feed(public_feed_hostname, public_feed_port)
+    # feed_socket.shutdown(socket.SHUT_RDWR)
+    # feed_socket.close()
 
-    # Start a parallel process that keeps receiving updates from the TCP socket
-    multiprocessing.set_start_method('fork')
-    proc = multiprocessing.Process(target=receive_message_from_socket, args=(feed_socket,))
-    proc.start()
+    # Start a thread that keeps receiving updates from the TCP socket
+    thread = Thread(target=receive_message_from_socket, args=(feed_socket,))
+    thread.start()
 
     # Login to public feed with our session_key from Nordnet API response
     cmd = {"cmd": "login", "args": {"session_key": our_session_key, "service": SERVICE_NAME}}
@@ -205,9 +212,12 @@ def main():
             print(e)
         console_input = input()
 
+    # End feed_socket.session and then the receiver thread will terminate gracefully
     feed_socket.shutdown(socket.SHUT_RDWR)
     feed_socket.close()
-    proc.terminate()
+
     sys.exit(0)
 
-main()
+
+if __name__ == '__main__':
+    main()
