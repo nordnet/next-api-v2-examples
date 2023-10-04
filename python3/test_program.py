@@ -188,8 +188,6 @@ def main():
     # Establish connection to public feed
     print("\nConnecting to feed " + str(public_feed_hostname) + ":" + str(public_feed_port) + "...\n")
     feed_socket = connect_to_feed(public_feed_hostname, public_feed_port)
-    # feed_socket.shutdown(socket.SHUT_RDWR)
-    # feed_socket.close()
 
     # Start a thread that keeps receiving updates from the TCP socket
     thread = Thread(target=receive_message_from_socket, args=(feed_socket,))
