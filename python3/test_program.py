@@ -193,6 +193,10 @@ def receive_message_from_socket(socket):
 
 
 def main():
+    # Create an HTTPS connection
+    conn = http.client.HTTPSConnection(API_URL)
+    headers = {"Accept": "application/json"}
+
     # Check Nordnet API status. Check Nordnet API documentation page to verify the path
     print("Checking Nordnet API status...")
     uri = API_PREFIX + '/' + API_VERSION + '/'
