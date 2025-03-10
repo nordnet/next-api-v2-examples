@@ -41,14 +41,13 @@ API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
 
-def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
+def ssh_key_authentication(api_key, private_key_path):
     """
     Authenticate using the new SSH key-based authentication flow
 
     Args:
         api_key: The API key provided by Nordnet
         private_key_path: Path to your private key file (e.g., id_ed25519)
-        service_name: Service name provided by Nordnet
 
     Returns:
         The session response data
@@ -94,7 +93,7 @@ def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
     # 3. Complete the authentication
     uri = f"{API_PREFIX}/{API_VERSION}/login/verify"
     params = urlencode({
-        'service': service_name,
+        'service': SERVICE_NAME,
         'api_key': api_key,
         'signature': signature_b64
     })
