@@ -54,9 +54,9 @@ def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
         The session response data
     """
     # 1. Start authentication challenge
-    conn = http.client.HTTPConnection(API_URL)
+    conn = http.client.HTTPSConnection(API_URL)
     uri = f"{API_PREFIX}/{API_VERSION}/login/start"
-    params = urlencode({'service': service_name, 'api_key': api_key})
+    params = urlencode({'api_key': api_key})
 
     print("Starting authentication challenge...")
     challenge_response = send_http_request(conn, 'POST', uri, params, {"Accept": "application/json"})
