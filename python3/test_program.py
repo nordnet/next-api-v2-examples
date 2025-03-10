@@ -54,9 +54,9 @@ def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
         The session response data
     """
     # 1. Start authentication challenge
-    conn = http.client.HTTPSConnection(API_URL)
-    uri = f"{API_PREFIX}/{API_VERSION}/login/challenge"
-    params = urlencode({'service': service_name, 'apiKey': api_key})
+    conn = http.client.HTTPConnection(API_URL)
+    uri = f"{API_PREFIX}/{API_VERSION}/login/start"
+    params = urlencode({'service': service_name, 'api_key': api_key})
 
     print("Starting authentication challenge...")
     challenge_response = send_http_request(conn, 'POST', uri, params, {"Accept": "application/json"})
@@ -99,10 +99,10 @@ def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
     signature_b64 = base64.b64encode(signature).decode('utf-8')
 
     # 3. Complete the authentication
-    uri = f"{API_PREFIX}/{API_VERSION}/login"
+    uri = f"{API_PREFIX}/{API_VERSION}/login/verify"
     params = urlencode({
         'service': service_name,
-        'apiKey': api_key,
+        'api_key': api_key,
         'signature': signature_b64
     })
 
@@ -193,6 +193,13 @@ def receive_message_from_socket(socket):
 
 
 def main():
+
+    # Input API key string (from uploading your public key on www.nordnet.se|dk|no|fi) and path to your private key
+    if len(sys.argv) != 3:
+        raise Exception('To run test_program you need to provide as arguments [API_KEY] [PRIVATE_KEY_PATH]')
+    api_key = sys.argv[1]
+    private_key_path = sys.argv[2]
+
     # Create an HTTPS connection
     conn = http.client.HTTPSConnection(API_URL)
     headers = {"Accept": "application/json"}
@@ -202,16 +209,8 @@ def main():
     uri = API_PREFIX + '/' + API_VERSION + '/'
     j = send_http_request(conn, 'GET', uri, '', headers)
 
-    """
-    The following code demonstrates how to authenticate using SSH key
-    """
-    api_key = "your_api_key_here"
-    private_key_path = "/path/to/your/private_key" # e.g., ~/.ssh/id_ed25519
-
     # Login using SSH key authentication
     j = ssh_key_authentication(api_key, private_key_path)
-
-    # Extract needed information from response
 
     # Store Nordnet API login response data
     public_feed_hostname = j["public_feed"]["hostname"]
