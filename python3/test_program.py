@@ -86,13 +86,6 @@ def ssh_key_authentication(api_key, private_key_path, service_name="NEXTAPI"):
     # Sign the challenge with the private key
     signature = private_key.sign(
         challenge_bytes,
-        # For Ed25519 keys, no padding or algorithm needed
-        # For RSA keys, you would need something like:
-        # padding.PSS(
-        #     mgf=padding.MGF1(hashes.SHA256()),
-        #     salt_length=padding.PSS.MAX_LENGTH
-        # ),
-        # utils.Prehashed(hashes.SHA256())
     )
 
     # Base64 encode the signature
