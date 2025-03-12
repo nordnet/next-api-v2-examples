@@ -35,25 +35,27 @@ from urllib.parse import urlencode
 
 
 # global variables with static information about Nordnet API
-API_URL = 'public.nordnet.se'
+VALID_COUNTRIES = {"se", "no", "dk", "fi"}
+API_URL = 'public.nordnet.'
 API_PREFIX = '/api'
 API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
 
-def ssh_key_authentication(api_key, private_key_path):
+def ssh_key_authentication(api_key, country_code, private_key_path):
     """
     Authenticate using the new SSH key-based authentication flow
 
     Args:
         api_key: The API key provided by Nordnet
+        country_code: The country code to add to domain (se, no, dk, or fi)
         private_key_path: Path to your private key file (e.g., id_ed25519)
 
     Returns:
         The session response data
     """
     # 1. Start authentication challenge
-    conn = http.client.HTTPSConnection(API_URL)
+    conn = http.client.HTTPSConnection(API_URL + country_code)
     uri = f"{API_PREFIX}/{API_VERSION}/login/start"
     params = urlencode({'api_key': api_key})
 
@@ -186,14 +188,18 @@ def receive_message_from_socket(socket):
 
 def main():
 
-    # Input API key string (from uploading your public key on www.nordnet.se|dk|no|fi) and path to your private key
-    if len(sys.argv) != 3:
-        raise Exception('To run test_program you need to provide as arguments [API_KEY] [PRIVATE_KEY_PATH]')
+    # Input API key string (from uploading your public key on www.nordnet.se|dk|no|fi), country code (se|dk|no|fi) and path to your private key
+    if len(sys.argv) != 4:
+        raise Exception('To run test_program you need to provide as arguments [API_KEY] [COUNTRY_CODE] [PRIVATE_KEY_PATH]')
     api_key = sys.argv[1]
-    private_key_path = sys.argv[2]
+    country_code = sys.argv[2].lower()
+    private_key_path = sys.argv[3]
+
+    if country_code not in VALID_COUNTRIES:
+        raise Exception(f"COUNTRY_CODE parameter must be one of 'se', 'no', 'dk' or 'fi'.")
 
     # Create an HTTPS connection
-    conn = http.client.HTTPSConnection(API_URL)
+    conn = http.client.HTTPSConnection(API_URL + country_code)
     headers = {"Accept": "application/json"}
 
     # Check Nordnet API status. Check Nordnet API documentation page to verify the path
@@ -202,7 +208,7 @@ def main():
     j = send_http_request(conn, 'GET', uri, '', headers)
 
     # Login using SSH key authentication
-    j = ssh_key_authentication(api_key, private_key_path)
+    j = ssh_key_authentication(api_key, country_code, private_key_path)
 
     # Store Nordnet API login response data
     public_feed_hostname = j["public_feed"]["hostname"]
