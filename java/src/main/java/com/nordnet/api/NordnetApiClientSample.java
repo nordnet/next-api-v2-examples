@@ -19,7 +19,7 @@ public class NordnetApiClientSample {
 
   public static final String PRIVATE_KEY_PATH = "";
   public static final String API_KEY = "";
-  private static final String API_URL = "www.nordnet-test.se";
+  private static final String API_URL = "public.nordnet.se";
   private static final String API_PREFIX = "/api";
   private static final String API_VERSION = "2";
   public static final String BASE_URL = API_URL + API_PREFIX + "/" + API_VERSION;

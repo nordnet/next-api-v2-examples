@@ -14,19 +14,13 @@ and read from the buffer when a full object has been transferred._
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
 2. Update the API_KEY and PRIVATE_KEY_PATH constants in `com.nordnet.api.NordnetApiClientSample.java`
-3. Update the main class in `pom.xml` to the correct main class:
-
-```xml
-<mainClass>com.nordnet.api.NordnetApiClientSample</mainClass>
-```
-
+3. Make sure the API_URL constant in `com.nordnet.api.NordnetApiClientSample.java` has the correct value according to your country
 4. Build and run the application:
-
-```bash
-cd java
-mvn clean package
-java -jar target/nordnet-api-client-sample-1.0.0.jar
-```
+   ```bash
+   cd java
+   mvn clean package
+   java -jar target/nordnet-api-client-sample-1.0.0.jar
+   ```
 
 Running the application should output something similar to the following:
 
