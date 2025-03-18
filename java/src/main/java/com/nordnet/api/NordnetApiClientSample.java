@@ -102,11 +102,15 @@ public class NordnetApiClientSample {
     System.out.println("Starting authentication challenge...");
 
     String startUri = "https://" + BASE_URL + "/login/start";
-    String startParams = "service=" + SERVICE_NAME + "&api_key=" + apiKey;
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectNode startJsonNode = objectMapper.createObjectNode();
+    startJsonNode.put("api_key", apiKey);
+    String startJsonBody = objectMapper.writeValueAsString(startJsonNode);
 
     JsonNode challengeResponse = HttpUtil.sendHttpRequest(
         "POST",
-        startUri + "?" + startParams
+        startUri,
+        startJsonBody
     );
 
     JsonNode challengeNode = challengeResponse.get("challenge");
@@ -123,13 +127,13 @@ public class NordnetApiClientSample {
 
     String signatureBase64 = CryptoUtil.signString(challenge, new String(privateKeyBytes));
 
-    // URL encode the signature to handle special Base64 characters
-    String encodedSignature = java.net.URLEncoder.encode(signatureBase64, StandardCharsets.UTF_8);
-    String verifyParams =
-        "service=" + SERVICE_NAME + "&api_key=" + apiKey + "&signature=" + encodedSignature;
-
     System.out.println("Completing authentication...");
     String verifyUrl = "https://" + BASE_URL + "/login/verify";
-    return HttpUtil.sendHttpRequest("POST", verifyUrl + "?" + verifyParams);
+    ObjectNode verifyJsonNode = objectMapper.createObjectNode();
+    verifyJsonNode.put("service", SERVICE_NAME);
+    verifyJsonNode.put("api_key", apiKey);
+    verifyJsonNode.put("signature", signatureBase64);
+    String verifyJsonBody = objectMapper.writeValueAsString(verifyJsonNode);
+    return HttpUtil.sendHttpRequest("POST", verifyUrl, verifyJsonBody);
   }
 }

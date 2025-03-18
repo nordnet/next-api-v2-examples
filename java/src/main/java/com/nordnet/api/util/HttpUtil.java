@@ -17,6 +17,11 @@ public class HttpUtil {
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   public static JsonNode sendHttpRequest(String method, String url)
+    throws Exception {
+    return sendHttpRequest(method, url, null);
+  }
+
+  public static JsonNode sendHttpRequest(String method, String url, String jsonBody)
       throws Exception {
     HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
         .uri(URI.create(url))
@@ -25,7 +30,9 @@ public class HttpUtil {
 
     if ("POST".equals(method)) {
       requestBuilder.header("Content-Type", "application/json")
-          .POST(HttpRequest.BodyPublishers.noBody());
+              .POST(jsonBody == null || jsonBody.isEmpty()
+                      ? HttpRequest.BodyPublishers.noBody()
+                      : HttpRequest.BodyPublishers.ofString(jsonBody));
     } else {
       requestBuilder.GET();
     }
