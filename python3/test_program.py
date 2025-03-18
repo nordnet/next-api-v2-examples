@@ -57,10 +57,14 @@ def ssh_key_authentication(api_key, country_code, private_key_path):
     # 1. Start authentication challenge
     conn = http.client.HTTPSConnection(API_URL + country_code)
     uri = f"{API_PREFIX}/{API_VERSION}/login/start"
-    params = urlencode({'api_key': api_key})
+    body = json.dumps({'api_key': api_key})
+    headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
 
     print("Starting authentication challenge...")
-    challenge_response = send_http_request(conn, 'POST', uri, params, {"Accept": "application/json"})
+    challenge_response = send_http_request(conn, 'POST', uri, body, headers)
     challenge = challenge_response["challenge"]
     print(f"Received challenge: {challenge}")
 
@@ -94,14 +98,18 @@ def ssh_key_authentication(api_key, country_code, private_key_path):
 
     # 3. Complete the authentication
     uri = f"{API_PREFIX}/{API_VERSION}/login/verify"
-    params = urlencode({
+    body = json.dumps({
         'service': SERVICE_NAME,
         'api_key': api_key,
         'signature': signature_b64
     })
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
 
     print("Completing authentication...")
-    login_response = send_http_request(conn, 'POST', uri, params, {"Accept": "application/json"})
+    login_response = send_http_request(conn, 'POST', uri, body, headers)
 
     return login_response
 
