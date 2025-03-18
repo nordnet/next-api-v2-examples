@@ -42,11 +42,12 @@ API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
 
-def ssh_key_authentication(api_key, country_code, private_key_path):
+def ssh_key_authentication(conn, api_key, country_code, private_key_path):
     """
     Authenticate using the new SSH key-based authentication flow
 
     Args:
+        conn: An http.client connection object
         api_key: The API key provided by Nordnet
         country_code: The country code to add to domain (se, no, dk, or fi)
         private_key_path: Path to your private key file (e.g., id_ed25519)
@@ -55,7 +56,6 @@ def ssh_key_authentication(api_key, country_code, private_key_path):
         The session response data
     """
     # 1. Start authentication challenge
-    conn = http.client.HTTPSConnection(API_URL + country_code)
     uri = f"{API_PREFIX}/{API_VERSION}/login/start"
     body = json.dumps({'api_key': api_key})
     headers = {
@@ -216,7 +216,7 @@ def main():
     j = send_http_request(conn, 'GET', uri, '', headers)
 
     # Login using SSH key authentication
-    j = ssh_key_authentication(api_key, country_code, private_key_path)
+    j = ssh_key_authentication(conn, api_key, country_code, private_key_path)
 
     # Store Nordnet API login response data
     public_feed_hostname = j["public_feed"]["hostname"]
