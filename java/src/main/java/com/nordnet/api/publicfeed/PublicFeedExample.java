@@ -10,22 +10,22 @@ import java.util.concurrent.Executors;
 
 public class PublicFeedExample {
 
-    private static ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
-
     public static void connectToPublicFeed(AuthenticationResponse authenticationResponse) throws Exception {
         System.out.println("Connecting to feed " + authenticationResponse.publicFeedHostname() + ":" + authenticationResponse.publicFeedPort() + "...\n");
         Socket feedSocket = SocketUtil.connect(authenticationResponse.publicFeedHostname(), authenticationResponse.publicFeedPort());
         System.out.println("Successfully connected to feed...\n");
 
-        EXECUTOR_SERVICE.submit(() -> SocketUtil.receiveMessagesFromSocket(feedSocket));
+        try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
+            executorService.submit(() -> SocketUtil.receiveMessagesFromSocket(feedSocket));
 
-        login(authenticationResponse, feedSocket);
-        subscribe(feedSocket);
+            login(authenticationResponse, feedSocket);
+            subscribe(feedSocket);
 
-        waitUntilExit();
+            waitUntilExit();
 
-        feedSocket.close();
-        EXECUTOR_SERVICE.shutdownNow();
+            feedSocket.close();
+            executorService.shutdownNow();
+        }
     }
 
     private static void waitUntilExit() {
