@@ -35,37 +35,83 @@ from urllib.parse import urlencode
 
 
 # global variables with static information about Nordnet API
-API_URL = 'public.nordnet.se'
+VALID_COUNTRIES = {"se", "no", "dk", "fi"}
+API_URL = 'public.nordnet.'
 API_PREFIX = '/api'
 API_VERSION = '2'
 SERVICE_NAME = 'NEXTAPI'
 
 
-def get_hash(username, password, public_key_filename):
+def ssh_key_authentication(conn, api_key, country_code, private_key_path):
     """
-    Helper function to encrypt with the public key provided
+    Authenticate using the new SSH key-based authentication flow
+
+    Args:
+        conn: An http.client connection object
+        api_key: The API key provided by Nordnet
+        country_code: The country code to add to domain (se, no, dk, or fi)
+        private_key_path: Path to your private key file (e.g., id_ed25519)
+
+    Returns:
+        The session response data
     """
-    timestamp = int(round(time.time() * 1000))
-    timestamp = str(timestamp).encode('ascii')
+    # 1. Start authentication challenge
+    uri = f"{API_PREFIX}/{API_VERSION}/login/start"
+    body = json.dumps({'api_key': api_key})
+    headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
 
-    username_b64 = base64.b64encode(username.encode('ascii'))
-    password_b64 = base64.b64encode(password.encode('ascii'))
-    timestamp_b64 = base64.b64encode(timestamp)
+    print("Starting authentication challenge...")
+    challenge_response = send_http_request(conn, 'POST', uri, body, headers)
+    challenge = challenge_response["challenge"]
+    print(f"Received challenge: {challenge}")
 
-    auth_val = username_b64 + b':' + password_b64 + b':' + timestamp_b64
-    # Need local copy of public key for Nordnet API in PEM format
-
+    # 2. Sign the challenge with the private key
+    # Load the private key
     try:
-        public_key_file_handler = open(public_key_filename, "rb").read()
+        with open(private_key_path, "rb") as key_file:
+            private_key = serialization.load_ssh_private_key(
+                key_file.read(),
+                password=None,  # If your key has a passphrase, provide it here
+                backend=default_backend()
+            )
     except IOError:
-        print("Could not find the following file: ",
-              "\"", public_key_filename, "\"", sep="")
+        print(f"Could not find the following file: \"{private_key_path}\"")
         sys.exit()
-    rsa_key = serialization.load_pem_public_key(public_key_file_handler, backend=default_backend())
-    encrypted_hash = rsa_key.encrypt(auth_val, padding.PKCS1v15())
-    encoded_hash = base64.b64encode(encrypted_hash)
 
-    return encoded_hash
+    # Sign the challenge
+    from cryptography.hazmat.primitives.asymmetric import utils
+    from cryptography.hazmat.primitives import hashes
+
+    # Convert challenge string to bytes
+    challenge_bytes = challenge.encode('utf-8')
+
+    # Sign the challenge with the private key
+    signature = private_key.sign(
+        challenge_bytes,
+    )
+
+    # Base64 encode the signature
+    signature_b64 = base64.b64encode(signature).decode('utf-8')
+
+    # 3. Complete the authentication
+    uri = f"{API_PREFIX}/{API_VERSION}/login/verify"
+    body = json.dumps({
+        'service': SERVICE_NAME,
+        'api_key': api_key,
+        'signature': signature_b64
+    })
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+    print("Completing authentication...")
+    login_response = send_http_request(conn, 'POST', uri, body, headers)
+
+    return login_response
 
 def send_http_request(conn, method, uri, params, headers):
     """
@@ -149,35 +195,35 @@ def receive_message_from_socket(socket):
 
 
 def main():
-    """
-    The main function
-    """
-    # Input username and password for your account in the test system
-    if len(sys.argv) != 4:
-        raise Exception('To run test_program you need to provide as arguments [USERNAME] [PASSWORD] [PEM_KEY_FILE]')
-    username = sys.argv[1]
-    password = sys.argv[2]
-    public_key_filename = sys.argv[3]
-    auth_hash = get_hash(username, password, public_key_filename)
 
+    # Input API key string (from uploading your public key on www.nordnet.se|dk|no|fi), country code (se|dk|no|fi) and path to your private key
+    if len(sys.argv) != 4:
+        raise Exception('To run test_program you need to provide as arguments [API_KEY] [COUNTRY_CODE] [PRIVATE_KEY_PATH]')
+    api_key = sys.argv[1]
+    country_code = sys.argv[2].lower()
+    private_key_path = sys.argv[3]
+
+    if country_code not in VALID_COUNTRIES:
+        raise Exception(f"COUNTRY_CODE parameter must be one of 'se', 'no', 'dk' or 'fi'.")
+
+    # Create an HTTPS connection
+    conn = http.client.HTTPSConnection(API_URL + country_code)
     headers = {"Accept": "application/json"}
-    conn = http.client.HTTPSConnection(API_URL)
 
     # Check Nordnet API status. Check Nordnet API documentation page to verify the path
     print("Checking Nordnet API status...")
     uri = API_PREFIX + '/' + API_VERSION + '/'
     j = send_http_request(conn, 'GET', uri, '', headers)
 
-    # POST login to Nordnet API. Check Nordnet API documentation page to verify the path
-    print("Logging in Nordnet API...")
-    uri = API_PREFIX + '/' + API_VERSION + '/login'
-    params = urlencode({'service': SERVICE_NAME, 'auth': auth_hash})
-    j = send_http_request(conn, 'POST', uri, params, headers)
+    # Login using SSH key authentication
+    j = ssh_key_authentication(conn, api_key, country_code, private_key_path)
 
     # Store Nordnet API login response data
     public_feed_hostname = j["public_feed"]["hostname"]
     public_feed_port = j["public_feed"]["port"]
     our_session_key = j["session_key"]
+
+    print(f"Successfully authenticated. Session key: {our_session_key}")
 
     # Establish connection to public feed
     print("\nConnecting to feed " + str(public_feed_hostname) + ":" + str(public_feed_port) + "...\n")
@@ -198,11 +244,6 @@ def main():
 
     console_input = input()
     while console_input != "exit":
-        try:
-            cmd = json.loads(console_input)
-            send_cmd_to_socket(feed_socket, cmd)
-        except Exception as e:
-            print(e)
         console_input = input()
 
     feed_socket.shutdown(socket.SHUT_RDWR)

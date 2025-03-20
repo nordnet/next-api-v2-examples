@@ -1,6 +1,6 @@
 ## Disclaimer
-The code examples are to be used in testing *only* (!). They are provided as is
-without any warranty of any kind, see `LICENSE` for more information.
+The code in this repo is intended as examples only. It is provided as is without
+any warranty of any kind, see `LICENSE` for more information.
 
 _Note that all the JSON objects end with newline.  As such you need to listen
 and read from the buffer when a full object has been transferred._
@@ -12,26 +12,32 @@ and read from the buffer when a full object has been transferred._
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Run and provide your username, password and the path to the Nordnet API public RSA key PEM format
-   file as arguments. The PEM file is provided by Nordnet Trading Support during onboarding.
+2. Run and provide your API-key, country code and the path to your private key
 ```
 cd python3
 pip3 install -r requirements.txt
-./test_program.py [insert username] [insert password] [insert pem key file path]
+./test_program.py [insert API-key] [insert country code] [insert private key file path]
 ```
 Running the test program should output something that looks similar to the following example output
 ```json
+Checking Nordnet API status...
+<< HTTP request GET /api/2/
 {
     "message": "",
     "system_running": true,
-    "timestamp": 1528730480984,
+    "timestamp": 1741781442953,
     "valid_version": true
 }
->> Response from logging into the session
+Starting authentication challenge...
+<< HTTP request POST /api/2/login/start
 {
-    "country": "SE",
-    "environment": "prod",
-    "expires_in": 300,
+    "challenge": "f0dcd2fa-92b1-4151-93af-61697eae217a"
+}
+Received challenge: f0dcd2fa-92b1-4151-93af-61697eae217a
+Completing authentication...
+<< HTTP request POST /api/2/login/verify
+{
+    "expires_in": 1800,
     "private_feed": {
         "encrypted": true,
         "hostname": "priv.next.nordnet.se",
@@ -42,28 +48,38 @@ Running the test program should output something that looks similar to the follo
         "hostname": "pub.next.nordnet.se",
         "port": 443
     },
-    "session_key": "01ba12bfd3244e63ad52c1731a54e2f3f98f949e"
+    "session_key": "15a6c4db-05b9-481c-b94a-ccffed83e693"
 }
->> Response from Price Feed
+Successfully authenticated. Session key: 15a6c4db-05b9-481c-b94a-ccffed83e693
+
+Connecting to feed pub.next.prod.nordnet.se:443...
+
+<< Sending cmd to feed: {'cmd': 'login', 'args': {'session_key': '15a6c4db-05b9-481c-b94a-ccffed83e693', 'service': 'NEXTAPI'}}
+<< Sending cmd to feed: {'cmd': 'subscribe', 'args': {'t': 'price', 'm': 11, 'i': '101'}}
+
+Starting receiving from socket...
+
+>> JSON updates from public feed
 {
     "data": {
-        "ask": 0.0,
-        "ask_volume": 0,
-        "bid": 65.0,
-        "bid_volume": 26200,
-        "close": 64.36,
-        "high": 0.0,
+        "ask": 87.0,
+        "ask_volume": 1200,
+        "bid": 83.44,
+        "bid_volume": 1,
+        "close": 77.22,
+        "high": 87.0,
         "i": "101",
-        "last": 0.0,
-        "last_volume": 0,
-        "low": 0.0,
+        "id": 16750901,
+        "last": 87.0,
+        "last_volume": 154,
+        "low": 82.96,
         "m": 11,
-        "open": 0.0,
-        "tick_timestamp": 1528726500001,
-        "trade_timestamp": 1528726500001,
-        "turnover": 0.0,
-        "turnover_volume": 0,
-        "vwap": 64.19
+        "open": 83.12,
+        "tick_timestamp": 1741781407194,
+        "trade_timestamp": 1741780275120,
+        "turnover": 8492556.03,
+        "turnover_volume": 101883,
+        "vwap": 84.56
     },
     "type": "price"
 }
