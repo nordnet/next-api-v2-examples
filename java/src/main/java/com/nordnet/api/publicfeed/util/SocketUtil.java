@@ -1,7 +1,8 @@
-package com.nordnet.api.publicfeed;
+package com.nordnet.api.publicfeed.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nordnet.api.publicfeed.PublicFeedExample;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;

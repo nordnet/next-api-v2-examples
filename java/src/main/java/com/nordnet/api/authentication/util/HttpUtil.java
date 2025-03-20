@@ -1,4 +1,4 @@
-package com.nordnet.api.util;
+package com.nordnet.api.authentication.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;

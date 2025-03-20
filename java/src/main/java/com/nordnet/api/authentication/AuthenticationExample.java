@@ -1,7 +1,7 @@
 package com.nordnet.api.authentication;
 
-import com.nordnet.api.util.CryptoUtil;
-import com.nordnet.api.util.HttpUtil;
+import com.nordnet.api.authentication.util.CryptoUtil;
+import com.nordnet.api.authentication.util.HttpUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +11,7 @@ public class AuthenticationExample {
 
     private static final String PRIVATE_KEY_PATH = "/path/to/private_key";
     private static final String API_KEY = "YOUR_API_KEY";
-    private static final String BASE_URL = "https://www.nordnet-test.se/api/2";
+    private static final String BASE_URL = "https://public.nordnet.se/api/2";
     private static final String SERVICE_NAME = "NEXTAPI";
 
     public static AuthenticationResponse authenticate() throws Exception {
@@ -25,9 +25,6 @@ public class AuthenticationExample {
         System.out.println("Nordnet API status: " + statusResponse);
     }
 
-    /**
-     *
-     */
     private static AuthenticationResponse openSshKeyAuthentication(String apiKey, String privateKeyPath)
             throws Exception {
         System.out.println("Starting authentication challenge...");

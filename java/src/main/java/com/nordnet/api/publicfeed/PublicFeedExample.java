@@ -1,6 +1,7 @@
 package com.nordnet.api.publicfeed;
 
 import com.nordnet.api.authentication.AuthenticationResponse;
+import com.nordnet.api.publicfeed.util.SocketUtil;
 
 import java.net.Socket;
 import java.util.Scanner;
@@ -31,12 +32,6 @@ public class PublicFeedExample {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.equals("exit")) {
-//            try {
-//                JsonNode cmd = objectMapper.readTree(input);
-//                SocketUtil.sendCommandToSocket(feedSocket, cmd);
-//            } catch (Exception e) {
-//                System.out.println(e.getMessage());
-//            }
             input = scanner.nextLine();
         }
     }
