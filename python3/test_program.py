@@ -244,11 +244,6 @@ def main():
 
     console_input = input()
     while console_input != "exit":
-        try:
-            cmd = json.loads(console_input)
-            send_cmd_to_socket(feed_socket, cmd)
-        except Exception as e:
-            print(e)
         console_input = input()
 
     feed_socket.shutdown(socket.SHUT_RDWR)
