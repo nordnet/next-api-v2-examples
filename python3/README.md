@@ -1,6 +1,6 @@
 ## Disclaimer
-The code examples are to be used in testing *only* (!). They are provided as is
-without any warranty of any kind, see `LICENSE` for more information.
+The code in this repo is intended as examples only. It is provided as is without
+any warranty of any kind, see `LICENSE` for more information.
 
 _Note that all the JSON objects end with newline.  As such you need to listen
 and read from the buffer when a full object has been transferred._
