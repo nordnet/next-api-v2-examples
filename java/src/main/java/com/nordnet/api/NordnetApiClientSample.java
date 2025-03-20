@@ -13,21 +13,8 @@ public class NordnetApiClientSample {
             System.exit(0);
         } catch (Exception e) {
             System.out.println(e);
+            e.printStackTrace();
             System.exit(1);
         }
     }
-
-//    private static void validateInput() {
-//        if ("".equals(PRIVATE_KEY_PATH)) {
-//            System.out.println(
-//                "You need to provide your private key path (PRIVATE_KEY_PATH) in order to use this example.");
-//            System.exit(1);
-//        }
-//        if ("".equals(API_KEY)) {
-//            System.out.println(
-//                "You need to provide your API key (API_KEY) in order to use this example.");
-//            System.exit(1);
-//        }
-//    }
-
 }
