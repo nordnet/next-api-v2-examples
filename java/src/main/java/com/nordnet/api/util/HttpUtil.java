@@ -1,7 +1,9 @@
 package com.nordnet.api.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,48 +12,53 @@ import java.time.Duration;
 
 public class HttpUtil {
 
-  private static final HttpClient httpClient = HttpClient.newBuilder()
-      .connectTimeout(Duration.ofSeconds(10))
-      .build();
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper;
 
-  public static JsonNode sendHttpRequest(String method, String url)
-    throws Exception {
-    return sendHttpRequest(method, url, null);
-  }
-
-  public static JsonNode sendHttpRequest(String method, String url, String jsonBody)
-      throws Exception {
-    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-        .uri(URI.create(url))
-        .header("Accept", "application/json")
-        .timeout(Duration.ofSeconds(30));
-
-    if ("POST".equals(method)) {
-      requestBuilder.header("Content-Type", "application/json")
-              .POST(jsonBody == null || jsonBody.isEmpty()
-                      ? HttpRequest.BodyPublishers.noBody()
-                      : HttpRequest.BodyPublishers.ofString(jsonBody));
-    } else {
-      requestBuilder.GET();
+    static {
+        objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-    System.out.println(">> HTTP request " + method + " " + url);
 
-    HttpResponse<String> response = httpClient.send(requestBuilder.build(),
-        HttpResponse.BodyHandlers.ofString());
-
-    System.out.println("<< HTTP request " + method + " " + url);
-    if (response.statusCode() != 200) {
-      System.out.println("<< HTTP response code: " + response.statusCode());
-      System.out.println("<< HTTP response body: " + response.body());
-      throw new Exception("HTTP request failed with status code: " + response.statusCode());
+    public static String get(String url) throws Exception {
+        HttpRequest request = defaultRequestBuilder(url).build();
+        return sendHttpRequest(request).body();
     }
-    String responseBody = response.body();
-    JsonNode jsonResponse = objectMapper.readTree(responseBody);
-    System.out.println(
-        objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonResponse));
 
-    return jsonResponse;
-  }
+    public static <T> T post(String url, Object object, Class<T> resonseClass) throws Exception {
+        HttpRequest.Builder requestBuilder = defaultRequestBuilder(url)
+                .header("Content-Type", "application/json")
+                .POST(getBodyPublisher(object));
+
+        HttpResponse<String> response = sendHttpRequest(requestBuilder.build());
+        return objectMapper.readValue(response.body(), resonseClass);
+    }
+
+    private static HttpRequest.BodyPublisher getBodyPublisher(Object object) throws JsonProcessingException {
+        if (object == null) {
+            return HttpRequest.BodyPublishers.noBody();
+        }
+
+        String body = objectMapper.writeValueAsString(object);
+        return HttpRequest.BodyPublishers.ofString(body);
+    }
+
+    private static HttpRequest.Builder defaultRequestBuilder(String url) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Accept", "application/json")
+                .timeout(Duration.ofSeconds(30));
+    }
+
+    private static HttpResponse<String> sendHttpRequest(HttpRequest requestBuilder) throws Exception {
+        System.out.println("<< HTTP request " + requestBuilder.method() + " " + requestBuilder.uri());
+        HttpResponse<String> response = httpClient.send(requestBuilder, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new Exception("HTTP request failed with status code: " + response.statusCode());
+        }
+        return response;
+    }
 }
