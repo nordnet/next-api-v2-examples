@@ -24,7 +24,6 @@ public class PublicFeedExample {
             waitUntilExit();
 
             feedSocket.close();
-            executorService.shutdownNow();
         }
     }
 
