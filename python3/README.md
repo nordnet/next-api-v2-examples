@@ -12,7 +12,11 @@ and read from the buffer when a full object has been transferred._
 
 ## Install and run
 1. Download the `nordnet/next-api-v2-examples` repo
-2. Run and provide your API-key, country code and the path to your private key
+2. Run test_program.py and provide your API-key, country code and the path to your private key
+
+This repo also includes a small program called sign.py which takes a private key file and a
+challenge and prints the corresponding signature. This can be used to debug your
+own signature code.
 ```
 cd python3
 pip3 install -r requirements.txt
